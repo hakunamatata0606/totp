@@ -1,6 +1,7 @@
 package service
 
 import (
+	jwttoken "example/totp/jwt_token"
 	"example/totp/otp"
 	"example/totp/repository"
 	"log"
@@ -10,12 +11,17 @@ import (
 )
 
 type OtpPayload struct {
-	Username string `json:"username"`
-	Otp      uint64 `json:"otp"`
+	Otp uint64 `json:"otp"`
 }
 
 func TotpHandler(repo repository.RepositoryIf, otpManager otp.OtpManagerIf) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+	return HandleWithClaims(func(ctx *gin.Context, claims *jwttoken.Claims) {
+		username, ok := (*claims)["username"].(string)
+		if !ok {
+			log.Println("TotpHandler(): could not get username")
+			ctx.Status(http.StatusInternalServerError)
+			return
+		}
 		var payload OtpPayload
 		err := ctx.BindJSON(&payload)
 		if err != nil {
@@ -23,15 +29,14 @@ func TotpHandler(repo repository.RepositoryIf, otpManager otp.OtpManagerIf) gin.
 			ctx.Status(http.StatusBadRequest)
 			return
 		}
-		log.Println("TotpHandler(): got otp request: ", payload)
-		user, err := repo.GetUser(ctx, &payload.Username)
+		user, err := repo.GetUser(ctx, &username)
 		if err != nil {
-			log.Println("TotpHandler(): could not find user in db: ", err)
+			log.Println("LoginHandler(): could not find user in db: ", err)
 			ctx.Status(http.StatusBadRequest)
 			return
 		}
-		if user.Username != payload.Username {
-			log.Println("TotpHandler(): get wrong user???, expect: ", payload.Username, " , got: ", user.Username)
+		if user.Username != username {
+			log.Println("LoginHandler(): get wrong user???, expect: ", username, " , got: ", user.Username)
 			ctx.Status(http.StatusInternalServerError)
 			return
 		}
@@ -42,5 +47,5 @@ func TotpHandler(repo repository.RepositoryIf, otpManager otp.OtpManagerIf) gin.
 			return
 		}
 		ctx.Status(http.StatusOK)
-	}
+	})
 }

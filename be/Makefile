@@ -10,9 +10,9 @@ all: server libotp libotp_test
 	cp $(tmp)/libotp.so $(target)/libotp.so
 	cp $(tmp)/otp_test $(target)/otp_test
 migrate_up:
-	migrate -path db/migrations -database "mysql://root:123@tcp(127.0.0.1:13306)/totp" -verbose up
+	migrate -path db/migrations -database "mysql://root:123@tcp(127.0.0.1:3306)/totp" -verbose up
 migrate_down:
-	migrate -path db/migrations -database "mysql://root:123@tcp(127.0.0.1:13306)/totp" -verbose down
+	migrate -path db/migrations -database "mysql://root:123@tcp(127.0.0.1:3306)/totp" -verbose down
 sqlc:
 	sqlc generate
 

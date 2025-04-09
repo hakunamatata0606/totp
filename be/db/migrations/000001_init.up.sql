@@ -20,4 +20,4 @@ ALTER TABLE `user_roles` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `user_roles` ADD FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
 
-INSERT INTO users(`username`, `password`, `secret`) values ("admin", "4e7182032c89839506d3caaa9935d8db", "admin"), ("bao", "89b4009376eaa752d186934b65ebbf39", "aloha");
+INSERT INTO users(`username`, `password`, `secret`) values ("admin", "admin", "admin"), ("bao", "123", "aloha");

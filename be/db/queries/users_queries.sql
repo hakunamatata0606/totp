@@ -1,4 +1,4 @@
 -- name: GetUser :one
-select username, secret
+select username, password, secret
 from users
 where username = ?;

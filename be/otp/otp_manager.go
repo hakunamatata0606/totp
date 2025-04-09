@@ -65,14 +65,15 @@ func (om *otpManagerImpl) GenerateOtp(clientSecret []byte) uint64 {
 		now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second(),
 	)
 	h := hmac.New(sha256.New, om.secret)
-	payload := append(clientSecret, []byte(nowStr)...)
+	payload := append([]byte(nowStr), []byte(clientSecret)...)
 	_, err := h.Write(payload)
 	if err != nil {
 		log.Fatal("Failed to signed client secret: ", err)
 	}
-	hashed := h.Sum([]byte(nil))[0:8]
-	truncated := binary.LittleEndian.Uint64(hashed)
-	return truncated % uint64(math.Pow10(int(om.digit)))
+	hashed := h.Sum([]byte(nil))[0:4]
+	hashed[3] = 0
+	truncated := binary.LittleEndian.Uint32(hashed)
+	return uint64(truncated) % uint64(math.Pow10(int(om.digit)))
 }
 
 func (om *otpManagerLibcImpl) GenerateOtp(clientSecret []byte) uint64 {

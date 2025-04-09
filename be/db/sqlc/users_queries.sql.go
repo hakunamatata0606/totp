@@ -10,19 +10,20 @@ import (
 )
 
 const getUser = `-- name: GetUser :one
-select username, secret
+select username, password, secret
 from users
 where username = ?
 `
 
 type GetUserRow struct {
 	Username string `json:"username"`
+	Password string `json:"password"`
 	Secret   []byte `json:"secret"`
 }
 
 func (q *Queries) GetUser(ctx context.Context, username string) (GetUserRow, error) {
 	row := q.db.QueryRowContext(ctx, getUser, username)
 	var i GetUserRow
-	err := row.Scan(&i.Username, &i.Secret)
+	err := row.Scan(&i.Username, &i.Password, &i.Secret)
 	return i, err
 }

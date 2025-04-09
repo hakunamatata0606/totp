@@ -8,6 +8,7 @@ import (
 
 type User struct {
 	Username string
+	Password string
 	Secret   []byte
 }
 
@@ -35,6 +36,7 @@ func (repo *repositoryImpl) GetUser(ctx context.Context, username *string) (*Use
 	}
 	user := &User{
 		Username: userDb.Username,
+		Password: userDb.Password,
 		Secret:   userDb.Secret,
 	}
 	return user, nil
