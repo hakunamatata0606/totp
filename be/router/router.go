@@ -7,7 +7,6 @@ import (
 	"example/totp/otp"
 	"example/totp/repository"
 	"example/totp/service"
-	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -25,13 +24,13 @@ func GetRouter() *gin.Engine {
 	router.POST("/otp_validate", service.AuthorizationMiddleware(tokenManager), service.TotpHandler(repo, om, cacheManager))
 	router.GET("/seed", service.AuthorizationMiddleware(tokenManager), service.SeedHandler(repo, cacheManager))
 
-	go func() {
-		for {
-			token := om.GenerateOtp([]byte("aloha"))
-			log.Println("bao token: ", token)
-			time.Sleep(1 * time.Second)
-		}
+	// go func() {
+	// 	for {
+	// 		token := om.GenerateOtp([]byte("aloha"))
+	// 		log.Println("bao token: ", token)
+	// 		time.Sleep(1 * time.Second)
+	// 	}
 
-	}()
+	// }()
 	return router
 }

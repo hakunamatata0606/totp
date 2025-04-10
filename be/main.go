@@ -10,5 +10,5 @@ func main() {
 	router := router.GetRouter()
 
 	//todo: get key cert from appstate
-	router.RunTLS(state.Config.ServerUrl, "my_site.crt", "my_site.key")
+	router.Run(state.Config.ServerUrl)
 }
