@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"example/totp/cache"
 	jwttoken "example/totp/jwt_token"
 	"example/totp/otp"
 	"example/totp/repository"
@@ -26,7 +27,7 @@ func (repo *mockRepo) GetUser(ctx context.Context, username *string) (*repositor
 		return &repository.User{
 			Username: "bao",
 			Password: "123",
-			Secret:   []byte("aloha"),
+			Secret:   "aloha",
 		}, nil
 	}
 	return nil, errors.New("not found")
@@ -40,6 +41,8 @@ func TestTotpHandler(t *testing.T) {
 
 	om := otp.New(secret, int64(interval), 6)
 	tm := jwttoken.New([]byte("aloha"), 10*time.Second)
+	cm := cache.NewInMemCache(24 * time.Hour)
+
 	claims := &jwttoken.Claims{
 		"username": "bao",
 	}
@@ -47,7 +50,7 @@ func TestTotpHandler(t *testing.T) {
 	require.Nil(t, err)
 
 	r.Use(service.AuthorizationMiddleware(tm))
-	r.POST("/otp", service.TotpHandler(&mockRepo{}, om))
+	r.POST("/otp", service.TotpHandler(&mockRepo{}, om, cm))
 
 	otp := om.GenerateOtp([]byte("aloha"))
 	user := service.OtpPayload{
@@ -103,4 +106,41 @@ func TestLoginService(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	_, err = tm.VerifyToken(&respJson.AccessToken)
 	require.NotNil(t, err)
+}
+
+type SeedResponse struct {
+	Seed string `json:"seed"`
+}
+
+func TestSeedHandler(t *testing.T) {
+	r := gin.Default()
+
+	username := "bao"
+	tm := jwttoken.New([]byte("aloha"), 10*time.Second)
+	cm := cache.NewInMemCache(24 * time.Hour)
+	repo := &mockRepo{}
+	claims := &jwttoken.Claims{
+		"username": username,
+	}
+	token, err := tm.GenerateToken(claims)
+	require.Nil(t, err)
+
+	r.Use(service.AuthorizationMiddleware(tm))
+	r.GET("/seed", service.SeedHandler(repo, cm))
+
+	req, err := http.NewRequest("GET", "/seed", nil)
+	require.Nil(t, err)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	user, err := repo.GetUser(context.Background(), &username)
+	require.Nil(t, err)
+	require.Equal(t, username, user.Username)
+
+	require.Equal(t, http.StatusOK, w.Result().StatusCode)
+	var respJson SeedResponse
+	err = json.NewDecoder(w.Body).Decode(&respJson)
+	require.Nil(t, err)
+	require.Equal(t, user.Secret, respJson.Seed)
 }

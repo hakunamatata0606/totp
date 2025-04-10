@@ -13,7 +13,7 @@ type User struct {
 	ID       int32  `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Secret   []byte `json:"secret"`
+	Secret   string `json:"secret"`
 }
 
 type UserRole struct {

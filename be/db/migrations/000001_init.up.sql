@@ -1,8 +1,8 @@
 CREATE TABLE `users` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `username` varchar(20) UNIQUE NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `secret` varbinary(32) UNIQUE NOT NULL
+  `password` varchar(256) NOT NULL,
+  `secret` varchar(256) UNIQUE NOT NULL
 );
 
 CREATE TABLE `user_roles` (

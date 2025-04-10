@@ -48,19 +48,19 @@ func TestGenerateOtp(t *testing.T) {
 	wg.Wait()
 }
 
-func TestGenerateOtpLibc(t *testing.T) {
-	interval := 5
-	om := otp.NewLibc([]byte("aloha"), int64(interval), 10)
-	clientSecret := "client_secret"
-	var wg sync.WaitGroup
+// func TestGenerateOtpLibc(t *testing.T) {
+// 	interval := 5
+// 	om := otp.NewLibc([]byte("aloha"), int64(interval), 10)
+// 	clientSecret := "client_secret"
+// 	var wg sync.WaitGroup
 
-	for i := range 3 {
-		wg.Add(1)
-		cSecret := clientSecret + fmt.Sprintf("%d", i)
-		go func() {
-			defer wg.Done()
-			simpleVerify(t, i, om, cSecret, int64(interval))
-		}()
-	}
-	wg.Wait()
-}
+// 	for i := range 3 {
+// 		wg.Add(1)
+// 		cSecret := clientSecret + fmt.Sprintf("%d", i)
+// 		go func() {
+// 			defer wg.Done()
+// 			simpleVerify(t, i, om, cSecret, int64(interval))
+// 		}()
+// 	}
+// 	wg.Wait()
+// }

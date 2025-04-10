@@ -18,7 +18,7 @@ where username = ?
 type GetUserRow struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Secret   []byte `json:"secret"`
+	Secret   string `json:"secret"`
 }
 
 func (q *Queries) GetUser(ctx context.Context, username string) (GetUserRow, error) {

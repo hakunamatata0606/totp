@@ -9,7 +9,7 @@ import (
 type User struct {
 	Username string
 	Password string
-	Secret   []byte
+	Secret   string
 }
 
 type RepositoryIf interface {
