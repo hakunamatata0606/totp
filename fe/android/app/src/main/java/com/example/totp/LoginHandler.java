@@ -7,21 +7,21 @@ import javax.net.ssl.*;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import org.json.JSONObject;
 import android.util.Log;
 
 public class LoginHandler {
     //todo: load from env file
-    private static final String server = "https://172.19.175.104:8080";
+    private static final String Server = BuildConfig.totpServer;
+    private static final int RequestTimeout = BuildConfig.totpRequestTimeout;
+
     private static final String ClientTokenKey = "clienttoken";
 
     private final KeyManager keyManager;
     private final Totp totp;
-    private final ExecutorService executorService;
+    private ExecutorService executorService;
     private static boolean disableSslVerification = false;
 
     public LoginHandler(KeyManager keyManager, Totp totp) {
@@ -64,30 +64,24 @@ public class LoginHandler {
     }
 
     public OtpStatusCode login(String username, String password) {
+        Log.d("alohaaaaaa 111", "");
         Future<OtpStatusCode> result =  executorService.submit(
             () -> {
-                return _login(username, password);
-            }
-        );
-        OtpStatusCode ret;
-        try {
-            ret = result.get();
-        }catch (Exception e) {
-            return OtpStatusCode.InternalError;
-        }
-        if (ret != OtpStatusCode.Ok) {
-            return ret;
-        }
-
-        result =  executorService.submit(
-            () -> {
+                Log.d("alohaaaaaa 123123", "");
+                OtpStatusCode ret = _login(username, password);
+                if (ret != OtpStatusCode.Ok) {
+                    return ret;
+                }
                 return getSeed();
             }
         );
-
+        Log.d("alohaaaaaa 222", "");
+        OtpStatusCode ret;
         try {
-            ret = result.get();
+            ret = result.get(RequestTimeout, TimeUnit.SECONDS);
         }catch (Exception e) {
+            executorService.shutdownNow();
+            executorService = Executors.newSingleThreadExecutor();
             return OtpStatusCode.InternalError;
         }
 
@@ -97,7 +91,7 @@ public class LoginHandler {
     private OtpStatusCode _login(String username, String password) {
         try {
             disableSslVerification();
-            URL url = new URL(String.format("%s/login", server));
+            URL url = new URL(String.format("%s/login", Server));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
@@ -144,7 +138,7 @@ public class LoginHandler {
                 Log.d("getSeed(): cannot get token ??? ", "");
                 return OtpStatusCode.LoginRequired;
             }
-            URL url = new URL(String.format("%s/seed", server));
+            URL url = new URL(String.format("%s/seed", Server));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept", "application/json");

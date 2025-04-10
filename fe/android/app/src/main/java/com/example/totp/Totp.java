@@ -18,7 +18,7 @@ public class Totp {
     private static final DateTimeFormatter DateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final String ClientSecretKey = "clientsecretkey";
     private int otp = 0;
-    private String serverSecret = "aloha";
+    private String serverSecret = BuildConfig.totpSecret;
     private String clientSecret = "";
     private int interval = 5;
     private int digit = 6;

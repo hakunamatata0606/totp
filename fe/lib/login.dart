@@ -16,6 +16,7 @@ class LoginState extends State<Login> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String _additionalMessage = "";
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -23,23 +24,36 @@ class LoginState extends State<Login> {
     loggedInCallback = widget.loggedInCallback;
   }
 
-  void _login() async {
+  Future<void> _login() async {
     String username = _usernameController.text;
     String password = _passwordController.text;
+    String msg = "";
 
-    final result = await totpPlatform.invokeMethod("login", {'username': username, 'password': password});
-    final resultCode = OtpStatusCode.fromInt(result);
-    if (resultCode == OtpStatusCode.ok) {
-      loggedInCallback();
-    }else if (resultCode == OtpStatusCode.loginRequired) {
-      setMessage("Username or password is not correct");
-    }else {
-      setMessage("Internal error");
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await totpPlatform.invokeMethod("login", {'username': username, 'password': password});
+      final resultCode = OtpStatusCode.fromInt(result);
+      if (resultCode == OtpStatusCode.ok) {
+        loggedInCallback();
+      }else if (resultCode == OtpStatusCode.loginRequired) {
+        msg = "Username or password is not correct";
+      }else {
+        msg = "Internal error";
+      }
+    }catch (e) {
+      msg = "Error occur please try again";
+    }finally {
+      setMessage(msg);
     }
+    
   }
 
   void setMessage(String message) {
     setState(() {
+      _isLoading = false;
       _additionalMessage = message;
     });
   }
@@ -83,13 +97,16 @@ class LoginState extends State<Login> {
               ]),
             ),
           ElevatedButton(
-            onPressed: () {
-              _login();
-            },
+            onPressed: _isLoading ? null : _login,
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50)
             ),
-            child: const Text('Login')
+            child: _isLoading ? const SizedBox(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+              ),
+            )
+              : const Text('Login')
           )
         ],
       ), 

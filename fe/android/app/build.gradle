@@ -22,6 +22,21 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def totpServerConfig = localProperties.getProperty('totp.server')
+if (totpServerConfig == null) {
+   totpServerConfig = 'https://172.19.175.104:8080'
+}
+
+def totpSecretConfig = localProperties.getProperty('totp.secret')
+if (totpSecretConfig == null) {
+    totpSecretConfig = 'aloha'
+}
+
+def totpRequestTimeoutConfig = localProperties.getProperty('totp.request_timeout')
+if (totpRequestTimeoutConfig == null) {
+    totpRequestTimeoutConfig = 10
+}
+
 android {
     namespace "com.example.totp"
     compileSdkVersion flutter.compileSdkVersion
@@ -49,6 +64,9 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        buildConfigField  "String", "totpServer", "\"${totpServerConfig}\""
+        buildConfigField  "String", "totpSecret", "\"${totpSecretConfig}\""
+        buildConfigField  "int", "totpRequestTimeout", totpRequestTimeoutConfig
     }
 
     buildTypes {
